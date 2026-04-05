@@ -1,0 +1,10 @@
+.gradle/
+.idea/
+**/build/
+captures/
+ndk-stage/
+app/assets/
+app/ndkobj/
+app/ndkobj2/
+*.iml
+*.apk

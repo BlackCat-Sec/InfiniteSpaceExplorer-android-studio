@@ -1,0 +1,91 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace "joaobapt.spaceexplorer"
+    compileSdk 34
+    ndkVersion "28.2.13676358"
+
+    defaultConfig {
+        applicationId "joaobapt.spaceexplorer"
+        minSdk 21
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+
+        ndk {
+            abiFilters "armeabi-v7a", "arm64-v8a"
+        }
+
+    }
+
+    sourceSets.main {
+        java {
+            srcDirs = ["src", "../proj.android/src/joaobapt"]
+            exclude "FacebookManager.java"
+        }
+        res.srcDir "res"
+        manifest.srcFile "AndroidManifest.xml"
+        assets.srcDir "assets"
+    }
+
+    externalNativeBuild {
+        ndkBuild {
+            path file("jni/Android.mk")
+            buildStagingDirectory file("${rootProject.projectDir.absolutePath}/ndk-stage")
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    signingConfigs {
+
+       release {
+            if (project.hasProperty("RELEASE_STORE_FILE")) {
+                storeFile file(RELEASE_STORE_FILE)
+                storePassword RELEASE_STORE_PASSWORD
+                keyAlias RELEASE_KEY_ALIAS
+                keyPassword RELEASE_KEY_PASSWORD
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (project.hasProperty("RELEASE_STORE_FILE")) {
+                signingConfig signingConfigs.release
+            }
+        }
+    }
+
+    packaging {
+        jniLibs {
+            useLegacyPackaging true
+        }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs += ['-Xlint:-deprecation', '-Xlint:-options']
+}
+
+dependencies {
+    implementation project(':libcocos2dx')
+}
+
+task cleanAssets(type: Delete) {
+    delete 'assets'
+}
+task copyAssets(type: Copy) {
+    from '../Resources'
+    into 'assets'
+}
+
+clean.dependsOn cleanAssets
+preBuild.dependsOn copyAssets
